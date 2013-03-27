@@ -12,19 +12,22 @@
 int main(int argc, char *argv[])
 {
     struct sockaddr_in servaddr;
+    hostent * he;
     char buf[MAXLINE];
     int sockfd, n;
     
     if (argc != 2) {
-        printf("usage: %s [SERVER IP]\n", argv[0]);
+        printf("usage: %s [SERVER host/IP]\n", argv[0]);
         exit(1);
     }
 /* ============sockfd============ */
     sockfd = Socket(AF_INET, SOCK_STREAM, 0);
 
+    he = gethostbyname (argv[1]);
+
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr(argv[1]);
+    servaddr.sin_addr.s_addr = * ((struct in_addr * )he->h_addr);
     servaddr.sin_port = htons(SERV_PORT);
 /* ============connect============ */
     Connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
