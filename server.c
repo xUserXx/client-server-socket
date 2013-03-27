@@ -23,7 +23,7 @@ int main(void)
 	int maxsock, timeuse[FDCOUNT];
 	
 /* ===========socket============== */
-	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
+	listenfd = Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 /* ==========允许地址立即使用======== */
 	on = 1;
 	setsockopt( listenfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
