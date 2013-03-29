@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
 #include <netdb.h>
 
 #include "common.h"
@@ -16,20 +17,42 @@ int main(int argc, char *argv[])
     struct hostent * he;
     char buf[MAXLINE];
     int sockfd, n;
+    extern int h_errno;
     
     if (argc != 2) {
-        printf("usage: %s [SERVER HOST/IP]\n", argv[0]);
+        printf("usage: %s [SERVER host/IP]\n", argv[0]);
         exit(1);
     }
 /* ============sockfd============ */
-    sockfd = Socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    he = gethostbyname (argv[1]);
+    sockfd = Socket(AF_INET, SOCK_STREAM, 0);
 
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = * ((struct in_addr * )he->h_addr);
     servaddr.sin_port = htons(SERV_PORT);
+    
+    if ( (n = inet_pton (AF_INET, argv[1], &servaddr.sin_addr) ) == 0) {
+ 
+        he = gethostbyname(argv[1]);
+        if (he == NULL) {
+       
+            if (h_errno == HOST_NOT_FOUND) {
+                
+                fprintf(stderr, "Error: The specified host is unknown [!!]\n");
+                exit (-1);
+                
+            }
+            
+        }
+        
+        servaddr.sin_addr = * ((struct in_addr * )he->h_addr);
+        
+    } else if (n < 0) {
+    
+        perror ("in inet_pton ()");
+        exit(-1);
+        
+    }
+    
 /* ============connect============ */
     Connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
